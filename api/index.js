@@ -15,7 +15,7 @@ bot.onText(/\/start/, (msg) => {
     console.log(msg)
     bot.sendMessage(
         msg.chat.id,
-        `hello ${msg.chat.first_name}, welcome...\n
+        `Assalamualaikum ${msg.chat.first_name}, have a nice day everyone!\n
         click  /predict to know about i and v`
     );   
 });
