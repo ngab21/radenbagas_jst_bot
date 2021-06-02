@@ -21,12 +21,11 @@ bot.onText(/\/start/, (msg) => {
 });
 
 
-
 state = 0;
 bot.onText(/\/predict/, (msg) => { 
     bot.sendMessage(
         msg.chat.id,
-        `input nilai i|v example 4|3`
+        `input nilai i|v contohnya 4|3`
     );   
     state = 1;
 });
@@ -34,29 +33,49 @@ bot.onText(/\/predict/, (msg) => {
 bot.on('message', (msg) => {
     if(state == 1){
         s = msg.text.split("|");
-        i = s[0]
-        v = s[1]
+        i = parseFloat(s[0])
+        r = parseFloat(s[1])
         model.predict(
             [
-                parseFloat(s[0]), // string to float
-                parseFloat(s[1])
+                i, // string to float
+                r
             ]
         ).then((jres)=>{
+            v = jres[0]
+            p = jres[1]
+            
+            cls_model.classify([i, r, v, p]).then((jres2)=>{
+                          
             bot.sendMessage(
-                msg.chat.id,
-                `nilai v yang diprediksi adalah ${jres[0]} volt`
-            );   
+                    msg.chat.id,
+                    `nilai v yang diprediksi adalah ${v} volt`
+             );   
             bot.sendMessage(
-                msg.chat.id,
-                `nilai p yang diprediksi adalah ${jres[1]} watt`
-    );   
-})
+                    msg.chat.id,
+                    `nilai p yang diprediksi adalah ${p} watt`
+             );
+            bot.sendMessage(
+                    msg.chat.id,
+                    `klasifikasi Tegangan ${jres2}`
+                  );   
+             })
+        })
     }else{
         state = 0
     }
 })
 
-
+// routers
+r.get('/classify/:i/:r', function(req, res, next) {    
+    model.predict(
+        [
+            parseFloat(req.params.i), // string to float
+            parseFloat(req.params.r)
+        ]
+    ).then((jres)=>{
+        res.json(jres);
+    })
+});
 
 // routers
 r.get('/prediction/:i/:r', function(req, res, next) {    
@@ -66,7 +85,16 @@ r.get('/prediction/:i/:r', function(req, res, next) {
             parseFloat(req.params.r)
         ]
     ).then((jres)=>{
-        res.json(jres);
+        cls_model.classify(
+            [
+                parseFloat(req.params.i), // string to float
+                parseFloat(req.params.r),
+                parseFloat(jres[0]),
+                parseFloat(jres[1])
+            ]  
+        ).then((jres)=>{
+            res.json(jres_)
+        })
     })
 });
 
